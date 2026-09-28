@@ -10,14 +10,12 @@ typedef struct{
 
 }vector;
 
-vector* vCreate();
-void vPushBack(vector* v, int n);
-void vPopBack(vector* v);
-size_t vGetSize(const vector* v);
-int vAt(const vector* v, size_t index);
-//void vClear(vector* v);
-void vReserve(vector* v, size_t new_cap);
-//void vInsert(vector* v, size_t pos, int n);
-void vDestroy(vector* v);
+vector* vecCreate();
+void vecPushBack(vector* v, int n);
+void vecPopBack(vector* v);
+size_t vecGetSize(const vector* v);
+int vecAt(const vector* v, size_t index);
+void vecReserve(vector* v, size_t new_cap);
+void vecDestroy(vector* v);
 
 #endif

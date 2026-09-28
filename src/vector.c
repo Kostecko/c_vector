@@ -1,6 +1,6 @@
 #include "vector.h"
 
-vector* vCreate(){
+vector* vecCreate(){
     vector* v = malloc(sizeof *v);
 
     if(v == NULL) return NULL;
@@ -12,7 +12,7 @@ vector* vCreate(){
     return v;
 }
 
-void vPushBack(vector* v, int n){
+void vecPushBack(vector* v, int n){
     if(v->array == NULL){
         v->array = malloc(sizeof n);
         if(v->array == NULL){
@@ -23,45 +23,44 @@ void vPushBack(vector* v, int n){
     }
 
     else if(v->size == v->capacity){
-        int* new_arr = realloc(v->array, v->capacity * sizeof n);
+        size_t new_capacity = v->capacity*2;
+        int* new_arr = realloc(v->array, new_capacity * sizeof *new_arr);
         
         if(new_arr == NULL){
-            printf("Reallocating memory failed! Returned NULL");
+            printf("Reallocating memory failed! Returned NULL\n");
             return;
         }
 
-        v->capacity *= 2;
+        v->capacity = new_capacity;
         v->array = new_arr;
     }
     *(v->array + v->size++) = n;
 }
 
-void vPopBack(vector* v){
+void vecPopBack(vector* v){
     if(v->size > 0) v->size--;
-    else printf("Vector is empty!");
+    else printf("Vector is empty!\n");
 }
 
-size_t vGetSize(const vector* v){
+size_t vecGetSize(const vector* v){
     return v->size;
 }
 
-//void vClear(vector* v){}
-
-int vAt(const vector* v, size_t index){
+int vecAt(const vector* v, size_t index){
     if(index >= v->size){
-        printf("Index out of range! Are you crazy? Index: ");
-        return index;
+        printf("Index out of range! Are you crazy?\n");
+        return 0;
     }
     return v->array[index];
 }
 
-void vReserve(vector*v, size_t new_cap){
+void vecReserve(vector*v, size_t new_cap){
     if(new_cap <= v->capacity) return;
 
     int* new_arr = realloc(v->array, new_cap * sizeof(int));
     
     if(new_arr == NULL){
-        printf("Reallocating memory failed! Returned NULL");
+        printf("Reallocating memory failed! Returned NULL\n");
         return;
     }
 
@@ -69,9 +68,7 @@ void vReserve(vector*v, size_t new_cap){
     v->array = new_arr;
 }
 
-//void vInsert(vector* v, size_t pos, int n){}
-
-void vDestroy(vector* v){
+void vecDestroy(vector* v){
     free(v->array);
     free(v);
 }
