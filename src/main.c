@@ -2,7 +2,8 @@
 #include "vector.h"
 
 int main(){
-    vector* vec = vCreate();
+    vector* vec = vecCreate();
 
+    vecDestroy(vec);
     return 0;
 }
