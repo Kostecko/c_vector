@@ -2,7 +2,7 @@
 #define VECTOR_H
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 typedef struct{
     int* array;
@@ -12,20 +12,20 @@ typedef struct{
 }vector;
 
 
-vector* vecCreate();
+vector* vecCreate(void);
 void vecDestroy(vector* v);
 
 int* vecAt(const vector* v, size_t index);
-int* vecFront(vector* v);
-int* vecBack(vector* v);
-int* vecData(vector* v);
-int vecIsEmpty(vector* v);
+int* vecFront(const vector* v);
+int* vecBack(const vector* v);
+int* vecData(const vector* v);
+int vecIsEmpty(const vector* v);
 size_t vecGetSize(const vector* v);
 void vecReserve(vector* v, size_t new_cap);
-size_t vecGetCapacity(vector* v);
+size_t vecGetCapacity(const vector* v);
 void vecShrinkToFit(vector* v);
 void vecClear(vector* v);
-void insert(vector* v, int* pos, size_t count, int value);
+void vecInsert(vector* v, int* pos, size_t count, int value);
 //insert range
 //emplace
 //erease
