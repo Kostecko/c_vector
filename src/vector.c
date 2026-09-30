@@ -46,13 +46,23 @@ int* vecData(const vector* v){
     return v->array;
 }
 
+int* vecBegin(const vector* v){
+    if(v==NULL) return NULL;
+    return v->array;
+}
+
+int* vecEnd(const vector* v){
+    if(v == NULL || v->array == NULL) return NULL;
+    return v->array+v->size;
+}
+
 int vecIsEmpty(const vector* v){
     if(v == NULL) return 1;
     if(v->size == 0) return 1;
     return 0;
 }
 
-size_t vecGetSize(const vector* v){
+size_t vecSize(const vector* v){
     if(v==NULL){
         printf("vector uninitialized\n");
         return 0;
@@ -62,6 +72,7 @@ size_t vecGetSize(const vector* v){
 }
 
 void vecReserve(vector*v, size_t new_cap){
+    if(v == NULL) return;
     if(new_cap <= v->capacity) return;
 
     int* new_arr = realloc(v->array, new_cap * sizeof *v->array);
@@ -75,14 +86,14 @@ void vecReserve(vector*v, size_t new_cap){
     v->array = new_arr;
 }
 
-size_t vecGetCapacity(const vector* v){
-    if(v==NULL) return;
+size_t vecCapacity(const vector* v){
+    if(v == NULL) return 0;
     return v->capacity;
 }
 
 void vecShrinkToFit(vector* v){
     if(v == NULL)return;
-    if(v->size == v->capacity || v->size == 0) return;
+    if(v->size == v->capacity) return;
     size_t new_cap = v->size;
 
     int* new_arr = realloc(v->array, new_cap*sizeof *new_arr);
@@ -102,13 +113,13 @@ void vecClear(vector* v){
 void vecInsert(vector* v, int* pos, size_t count, int value){
     if(v == NULL || count == 0) return;
 
-    size_t new_space_index;
+    size_t index;
 
-    if(v->size == 0) new_space_index = 0;
+    if(v->size == 0) index = 0;
     else{
         if(pos == NULL) return;
-        new_space_index = pos - v->array;
-        if(new_space_index > v->size) return;
+        index = pos - v->array;
+        if(index > v->size) return;
     }
 
     if(v->size + count > v->capacity){
@@ -123,17 +134,120 @@ void vecInsert(vector* v, int* pos, size_t count, int value){
         v->capacity = new_cap;
     }
 
-    pos = v->array + new_space_index;
+    pos = v->array + index;
     
-    memmove(pos + count, pos, (v->size - new_space_index) * sizeof *v->array);
-    
+    memmove(pos + count, pos, (v->size - index) * sizeof *v->array);
+
     for(size_t i = 0; i < count; i++)
-        v->array[new_space_index+i] = value;
+        v->array[index+i] = value;
         
     v->size += count;
 }
 
-//insert range, emplace, erease
+void vecInsertRange(vector* v, int* pos, size_t count, const int* rg){
+    if(v ==  NULL || count == 0 || rg == NULL) return;
+
+    //poprawic rg jako v
+
+    size_t index;
+
+    if(v->size == 0) index = 0;
+    else{
+        if(pos == NULL) return;
+        index = pos - v->array;
+        if(index > v->size) return;
+    }
+
+    if(v->size+count > v->capacity){
+        size_t new_cap = v->capacity *2;
+        if(new_cap < v->size + count) new_cap = v->size + count;
+
+        int* new_arr = realloc(v->array, new_cap * sizeof *v->array);
+        
+        if(new_arr == NULL) return;
+
+        v->array = new_arr;
+        v->capacity = new_cap;
+    }
+
+    pos = v->array + index;
+
+    memmove(pos+count, pos, (v->size - index) * sizeof *v->array);
+
+    for(size_t i=0;i<count;i++)
+        v->array[i+index] = rg[i];
+    v->size += count;
+}
+
+void vecEmplace(vector* v, int* pos, int value){
+    if(v == NULL) return;
+
+    if(v->array == NULL){
+        v->array = malloc(sizeof *v->array);
+        if(v->array == NULL)return;
+        v->capacity = 1;
+    }
+
+    size_t index;
+
+    if(v->size==0)index=0;
+    else{
+        if(pos == NULL) return;
+        index = pos - v->array;
+        if(index > v->size) return;
+    }
+
+    if(v->size == v->capacity){
+        size_t new_cap = v->capacity * 2;
+        int* new_arr = realloc(v->array, new_cap * sizeof*v->array);
+
+        if(new_arr == NULL) return;
+
+        v->capacity = new_cap;
+        v->array = new_arr;
+    }
+
+    pos = v->array + index;
+
+    memmove(pos + (size_t)1, pos, (v->size - index) * sizeof *v->array);
+
+    v->array[index] = value;
+    v->size += 1;
+}
+
+void vecErase(vector* v, int* pos){
+    if(v == NULL || v->array == NULL || pos == NULL || v->size == 0) return;
+
+    size_t index = pos - v->array;
+    if(index >= v->size) return;
+
+    size_t len = v->size - index - 1;
+
+    memmove(pos, pos+1, len * sizeof *v->array);
+    v->size-=1;
+}
+
+void vecEraseRange(vector* v, int* first, int* last){
+    if(v == NULL || first == NULL || last == NULL || last < first) return;
+    
+    size_t len = last - first + 1;
+
+    if(len == 0) return;
+    if(len == 1){
+        vecErase(v, first);
+        return;
+    }
+
+    if(last == (v->array + v->size-1)){
+        v->size -= len;
+        return;
+    }
+
+    size_t lentomove = v->array+v->size-1 - last;
+
+    memmove(first, last+1, lentomove * sizeof *v->array);
+    v->size -= len;
+}
 
 void vecPushBack(vector* v, int n){
     if(v==NULL) return;
@@ -162,7 +276,13 @@ void vecPushBack(vector* v, int n){
     *(v->array + v->size++) = n;
 }
 
-//emplace back, append reange
+void vecEmplaceBack(vector* v, int value){
+    vecPushBack(v, value);
+}
+
+void vecAppendRange(vector* v, size_t count, const int* rg){
+    vecInsertRange(v, vecEnd(v), count, rg);
+}
 
 void vecPopBack(vector* v){
     if(v==NULL) return;
@@ -196,5 +316,10 @@ void vecResize(vector* v, size_t new_size, int value){
     v->size = new_size;
 }
 
-//swap
+void vecSwap(vector* v, vector* other){
+    if(v == NULL || other == NULL) return;
+    vector vv = *v;
 
+    *v = *other;
+    *other = vv;
+}

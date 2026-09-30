@@ -1,25 +1,35 @@
 #include <stdio.h>
 #include "vector.h"
 
+void vprint(const vector* v){
+    for(int i=0;i<vecSize(v); i++){
+        printf("vec[%i]:\t%i\n", i, *vecAt(v, i));
+    }
+}
+
+void vinit(vector* v, int size){
+    for(int i= 0;i<size;i++)
+        vecPushBack(v, i+1);
+}
+
+void vinfo(vector* v){
+    printf("size: %zu\ncapacity: %zu\n\n",vecSize(v), vecCapacity(v));
+}
+
 int main(){
     vector* vec = vecCreate();
+    vinit(vec, 10);
 
-    vecReserve(vec, 10);
-    //vecResize(vec, 10, 0);
+    //TODO
+    //range functions - check if rg is vector's part
+    //optimize lines of code
+    //pos ptr not from vector situation
+    //ujednolicic metody dzialania i sprawdzania vectorow itd uk
+    //fsanitize
+    //any type
 
-    for(int i=1;i<=5;i++)
-        vecPushBack(vec, i);
-
-    //printf("capacity: %zu\nsize: %zu\n\n", vecGetCapacity(vec), vecGetSize(vec));
-
-
-    vecInsert(vec, vecAt(vec, 3), 6, 32);
-
-    for(int i=0;i<vecGetSize(vec);i++)
-        printf("%i. %i\n", i+1, *vecAt(vec, i));
-
-    //printf("\n\ncapacity: %zu\nsize: %zu\n\n", vecGetCapacity(vec), vecGetSize(vec));
-
+    vinfo(vec);
+    vprint(vec);
     vecDestroy(vec);
     return 0;
 }
