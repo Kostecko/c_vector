@@ -18,7 +18,11 @@ void vinfo(vector* v){
 
 int main(){
     vector* vec = vecCreate();
-    vinit(vec, 10);
+    //vinit(vec, 10);
+
+    int arr[] = {1,2,3,4,5};
+
+    vecInsertRange(vec, vecBegin(vec), 5, arr);
 
     //TODO
     //range functions - check if rg is vector's part
