@@ -1,48 +1,68 @@
 #include "vector.h"
+#define vsize v->size
+#define vcap v->capacity
+#define varr v->array
+#define dtype_size sizeof *varr
 
 //----------INTERNAL FUNCTIONS--------------------------------
 
-static int isMyElement(int*srcB, int* srcE, int* ptrB, int* ptrE){
-    if((srcB == NULL && srcE == NULL) || (ptrB == NULL && ptrE == NULL)) return 0;
+static int vecMalloc(vector* v, const size_t n_of_elems){
+    int* new_arr = NULL;
 
-    uintptr_t fsrcB =(uintptr_t) srcB;
-    uintptr_t fsrcE =(uintptr_t) srcE;
-    uintptr_t fptrB =(uintptr_t) ptrB;
-    uintptr_t fptrE =(uintptr_t) ptrE;
-    
-    int output = 1;
-
-    if(fptrB != NULL && (fptrB < fsrcB || fptrB > fsrcE)) output = 0;
-    if(fptrE != NULL &&(fptrE < fsrcB || fptrE > fsrcE)) output = 0;
-
-    if(output == 0) printf("NOT YOUR ELEMENT!");
-
-    return output;
-}
-
-static int vecMalloc(vector* v, size_t n_of_elems){
-    if(v->array = malloc(n_of_elems * sizeof *v->array)){
-        v->size = n_of_elems;
-        return v->capacity = n_of_elems;
+    if(!varr && n_of_elems){
+        if(new_arr = malloc(n_of_elems * 2 * dtype_size)){
+            //printf("MALLOC\n");
+            varr = new_arr;
+            vcap = n_of_elems * 2;
+            return 1;
+        }
     }
-    free(v->array);
-    printf("Allocating memory failed!\n\n");
+
+    free(new_arr);
+    printf("Memory allocation failed!\n\n");
     return 0;
 }
 
-static int vecRealloc(vector* v, size_t new_cap){
-    if(!new_cap) return 0;
+static int vecRealloc(vector* v, const size_t new_cap){
+    if(!new_cap){
+        vsize = 0;
+        vcap = 0;
+        free(varr);
+        varr = NULL;
+        return 1;
+    }
 
-    int* new_arr;
-    if(!(new_arr = realloc(v->array, new_cap * sizeof *v->array))){
-        free(new_arr);
-        return 0;
-    } 
+    int* new_arr = realloc(varr, new_cap * dtype_size);
 
-    v->array = new_arr;
-    v->capacity = new_cap;
+    if(new_arr){
+        varr = new_arr;
+        vcap = new_cap;
+        return 1;
+    }
+    return 0;
+}
 
-    return 1;
+static int isMyElement(ciptrc objBegin, const size_t objSize, ciptrc ptr1, ciptrc ptr2){
+    int p1b = 0;
+    int p2b = 0;
+
+    if(ptr1){
+        for(size_t i = 0; i < objSize; i++){
+            if(ptr1 == objBegin + i){
+                p1b = 1;
+                break;
+            }
+        }
+    }
+    if(ptr2){
+        for(size_t i = 0; i < objSize; i++){
+            if(ptr2 == objBegin + i){
+                p2b = 1;
+                break;
+            }
+        }
+    }
+    return p1b * p2b;
 }
 
 //----------EXTERNAL FUNCTIONS--------------------------------
@@ -51,58 +71,59 @@ vector* vecCreate(void){
     vector* v = malloc(sizeof *v);
     if(!v) { free(v); return NULL; }
 
-    vecMalloc(v, 1);
-    v->size = 0;
+    varr = NULL;
+    vsize = 0;
+    vcap = 0;
 
     return v;
 }
 
 void vecDestroy(vector* v){
-    if(!v) return;
-    free(v->array);
-    free(v);
+    if(v){
+        if(varr) free(varr);
+        free(v);
+    }
 }
 
 
-int* vecAt(const vector* v, size_t index){
+ciptrc vecAt(const vector* v, size_t index){
     if(!v) return NULL;
-    if(index >= v->size){
+    if(index >= vsize){
         printf("Index out of range! Are you crazy?\n");
         return NULL;
     }
-    return &(v->array[index]);
+    return &(varr[index]);
 }
 
-int* vecFront(const vector* v){
+ciptrc vecFront(const vector* v){
     if(!v) return NULL;
-    if(!v->size) return NULL;
-    return v->array;
+    if(!vsize) return NULL;
+    return varr;
 }
 
-int* vecBack(const vector* v){
-    if(!v || !v->array) return NULL;
-    if(!v->size) return v->array;
-    return v->array+(v->size-1);
+ciptrc vecBack(const vector* v){
+    if(!v || !varr || !vsize) return NULL;
+    return varr+vsize-1;
 }
 
-int* vecData(const vector* v){
+ciptrc vecData(const vector* v){
     if(!v) return NULL;
-    return v->array;
+    return varr;
 }
 
-int* vecBegin(const vector* v){
+ciptrc vecBegin(const vector* v){
     if(!v) return NULL;
-    return v->array;
+    return varr;
 }
 
-int* vecEnd(const vector* v){
-    if(!v || !v->array) return NULL;
-    return v->array+v->size;
+ciptrc vecEnd(const vector* v){
+    if(!v || !varr) return NULL;
+    return varr+vsize;
 }
 
-int vecIsEmpty(const vector* v){
+int vecEmpty(const vector* v){
     if(!v) return 1;
-    if(!v->size) return 1;
+    if(!vsize) return 1;
     return 0;
 }
 
@@ -112,154 +133,147 @@ size_t vecSize(const vector* v){
         return 0;
     }
     
-    return v->size;
+    return vsize;
 }
 
-void vecReserve(vector*v, size_t new_cap){
-    if (!v || new_cap <= v->capacity) return;
+void vecReserve(vector* v, const size_t new_cap){
+    if (!v || new_cap <= vcap) return;
 
     vecRealloc(v, new_cap);
 }
 
 size_t vecCapacity(const vector* v){
     if(!v) return 0;
-    return v->capacity;
+    return vcap;
 }
 
 void vecShrinkToFit(vector* v){
-    if(!v || v->size == v->capacity)return;
-    vecRealloc(v, v->size);
+    if(!v || !varr || vsize == vcap) return;
+
+    vecRealloc(v, vsize);
 }
 
 void vecClear(vector* v){
-    if(!v || !v->size) return;
-    v->size = 0;
+    if(!v || !vsize) return;
+    vsize = 0;
 }
 
-void vecInsert(vector* v, int* pos, size_t count, int value){
-    if(!v || !count || 
-        !isMyElement(vecBegin(v), 
-        vecBack(v), pos, NULL)) return;
-    
-    size_t index = pos - v->array;
+void vecInsert(vector* v, const size_t index, const size_t count, const int value){
+    if(!v || !count || index > vsize) return;
+    if(!varr) if(!vecMalloc(v, count)) return;
+    if(vsize+count > vcap)
+        if(!vecRealloc(v, (count+vcap)*2)) return;
 
-    if(v->size+count > v->capacity)
-        if(!vecRealloc(v, (count+v->capacity)*2)) return;
+    memmove(varr + index + count, varr + index, (vsize - index) * dtype_size);
 
-    pos = v->array + index;
-
-    memmove(pos + count, pos, (v->size - index) * sizeof *v->array);
-
-    for(size_t i = 0; i < count; i++)
-        v->array[index+i] = value;
-        
-    v->size += count;
+    for(size_t i = 0; i < count; i++) varr[index+i] = value;
+    vsize += count;
 }
 
-void vecInsertRange(vector* v, int* pos, size_t count, const int* rg){
+void vecInsertRange(vector* v, const size_t index, const size_t count, ciptrc rg){
     if(!v|| !count || !rg) return;
+    if(index > vsize) return; 
+    if(!varr) if(!vecMalloc(v, count)) return;
+    
+    const int* rgptr = rg;
+    int* buffer = NULL;
 
-    if(!isMyElement(vecBegin(v), vecEnd(v), pos, NULL)) return;
-    if(isMyElement(vecBegin(v), vecBack(v), rg, rg+count-1)) return;
+    if(isMyElement(v->array, v->size, rg, rg + count - 1)){
+        buffer = malloc(count * dtype_size);
+        if(!buffer) return;
+        memcpy(buffer, rg, count * dtype_size);
 
-    size_t index = pos - v->array;
-        
-    if(v->size+count > v->capacity)
-        if(!vecRealloc(v, (v->size + count) * 2)) return;
-        
-    pos = v->array + index;
+        rgptr = buffer;
+    }
 
-    memmove(pos+count, pos, (v->size - index) * sizeof *v->array);
+    if(vsize + count > vcap){
+        if(!vecRealloc(v, (vsize + count) * 2)){ 
+            if(buffer) free(buffer);
+            return; 
+        }
+    }
+    memmove(varr + index + count, 
+        varr + index, 
+        (vsize - index) * dtype_size);
 
-    for(size_t i=0;i<count;i++)
-        v->array[i+index] = rg[i];
-    v->size += count;
+    for(size_t i = 0; i < count; i++) varr[i + index] = rgptr[i];
+
+    vsize += count;
+    if(buffer) free(buffer);
 }
 
-void vecEmplace(vector* v, int* pos, int value){
+void vecEmplace(vector* v, const size_t index, const int value){
     if(!v) return;
-    if(!isMyElement(vecBegin(v), vecBack(v), pos, NULL)) return;
-    
-    if(!v->size)
-        v->size++;
+    if(index > vsize) return;
+    if(!varr) if(!vecMalloc(v, 1)) return;
+    if(vsize == vcap) if(!vecRealloc(v, vcap*2)) return;
 
-    size_t index = pos - v->array;
-
-    if(v->size == v->capacity)
-        if(!vecRealloc(v, v->capacity*2)) return;
-
-    pos = v->array + index;
-    
-    memmove(pos + (size_t)1, pos, (v->size - index) * sizeof *v->array);
-    
-    v->array[index] = value;
-    v->size += 1;
+    memmove(varr + index + 1, varr + index, (vsize - index) * dtype_size);
+    varr[index] = value;
+    vsize++;
 }
 
-void vecErase(vector* v, int* pos){
-    if(!v || !v->array || !pos || !v->size) return;
-    if(!isMyElement(vecBegin(v), vecBack(v), pos, NULL)) return;
+void vecErase(vector* v, const size_t index){
+    if(!v || !varr || !vsize || index >= vsize) return;
+    if(index == vsize - 1) {vsize--; return;}
 
-    size_t index = pos - v->array;
-    size_t len = v->size - index - 1;
-
-    memmove(pos, pos+1, len * sizeof *v->array);
-
-    v->size-=1;
+    size_t len = vsize - (index + 1);
+    memmove(varr + index, varr + index + 1, len * dtype_size);
+    vsize--;
 }
 
-void vecEraseRange(vector* v, int* first, int* last){
-    if(!v || last < first) return;
-    if(!isMyElement(vecBegin(v), 
-    vecBack(v), first, last)) return;
+void vecEraseRange(vector* v, const size_t first, const size_t last){
+    if(!v || last >= vsize || first > last) return;
 
     size_t len = last - first + 1;
 
     if(len == 0) return;
     if(len == 1){ vecErase(v, first); return; }
-    if(last == (v->array + v->size-1)){ v->size -= len; return; }
+    if(last == vsize - 1) { vsize -= len; return; }
 
-    size_t lentomove = v->array+v->size-1 - last;
+    size_t lentomove = vsize - (last + 1);
 
-    memmove(first, last+1, lentomove * sizeof *v->array);
-    v->size -= len;
+    memmove(varr + first, varr + last + 1, lentomove * dtype_size);
+    vsize -= len;
 }
 
-void vecPushBack(vector* v, int n){
+void vecPushBack(vector* v, const int value){
     if(!v) return;
+    if(!varr) if(!vecMalloc(v, 1)) return;
 
-    if(!v->size) v->size++;
+    //printf("%p\n", varr);
 
-    if(v->size == v->capacity)
-        if(!vecRealloc(v, v->capacity*2)) return;
+    if(vsize == vcap)
+        if(!vecRealloc(v, vcap * 2)) return;
 
-    *(v->array + v->size++) = n;
+    varr[++vsize - 1] = value;
 }
 
-void vecEmplaceBack(vector* v, int value){
+void vecEmplaceBack(vector* v, const int value){
     vecPushBack(v, value);
 }
 
-void vecAppendRange(vector* v, size_t count, const int* rg){
-    vecInsertRange(v, vecEnd(v), count, rg);
+void vecAppendRange(vector* v, const size_t count, ciptrc rg){
+    if(!v) return;
+    vecInsertRange(v, vsize, count, rg);
 }
 
 void vecPopBack(vector* v){
     if(!v) return;
-    if(v->size > 0) v->size--;
+    if(vsize > 0) vsize--;
     else printf("Vector is empty!\n");
 }
 
-void vecResize(vector* v, size_t new_size, int value){
+void vecResize(vector* v, const size_t new_size, const int value){
     if(!v) return;
-    if(new_size == v->size) return;
-    if(new_size < v->size){ v->size = new_size; return; }
-    if(new_size > v->capacity)
-        if(!vecRealloc(v, (v->capacity+new_size)*2)) return;
+    if(new_size == vsize) return;
+    if(new_size < vsize){ vsize = new_size; return; }
+    if(new_size > vcap)
+        if(!vecRealloc(v, (vcap+new_size)*2)) return;
     
-    for(size_t i = v->size; i<new_size;i++) *(v->array + i) = value;
+    for(size_t i = vsize; i<new_size;i++) *(varr + i) = value;
     
-    v->size = new_size;
+    vsize = new_size;
 }
 
 void vecSwap(vector* v, vector* other){

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdint.h>
 
+typedef const int* const ciptrc;
+
 typedef struct{
     int* array;
     size_t size;
@@ -16,33 +18,29 @@ typedef struct{
 vector* vecCreate(void);
 void vecDestroy(vector* v);
 
-int* vecAt(const vector* v, size_t index);
-int* vecFront(const vector* v);
-int* vecBack(const vector* v);
-int* vecData(const vector* v);
-int* vecBegin(const vector* v);
-int* vecEnd(const vector* v);
-int vecIsEmpty(const vector* v);
+ciptrc vecAt(const vector* v, const size_t index);
+ciptrc vecFront(const vector* v);
+ciptrc vecBack(const vector* v);
+ciptrc vecData(const vector* v);
+ciptrc vecBegin(const vector* v);
+ciptrc vecEnd(const vector* v);
+int vecEmpty(const vector* v);
 size_t vecSize(const vector* v);
-void vecReserve(vector* v, size_t new_cap);
+void vecReserve(vector* v, const size_t new_cap);
 size_t vecCapacity(const vector* v);
 void vecShrinkToFit(vector* v);
 void vecClear(vector* v);
-void vecInsert(vector* v, int* pos, size_t count, int value);
-void vecInsertRange(vector* v, int* pos, size_t count, const int* rg);
-void vecEmplace(vector* v, int* pos, int value);
-void vecErase(vector* v, int* pos);
-void vecEraseRange(vector* v, int* first, int* last);
-void vecPushBack(vector* v, int n);
-void vecEmplaceBack(vector*v, int value);
-void vecAppendRange(vector* v, size_t count, const int* rg);
+void vecInsert(vector* v, const size_t index, const size_t count, const int value);
+void vecInsertRange(vector* v, const size_t index, const size_t count, ciptrc rg);
+void vecEmplace(vector* v, const size_t index, const int value);
+void vecErase(vector* v, const size_t index);
+void vecEraseRange(vector* v, const size_t first, const size_t last);
+void vecPushBack(vector* v, const int value);
+void vecEmplaceBack(vector*v, const int value);
+void vecAppendRange(vector* v, const size_t count, ciptrc rg);
 void vecPopBack(vector* v);
-void vecResize(vector* v, size_t new_size, int value);
+void vecResize(vector* v, const size_t new_size, const int value);
 void vecSwap(vector* v, vector* other);
-
-
-
-
 
 
 #endif
